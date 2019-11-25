@@ -4,7 +4,16 @@
 # Fixed up by JRS for bzip2-0.9.5d release.
 
 CC=cl
-CFLAGS= -DWIN32 -MD -Ox -D_FILE_OFFSET_BITS=64 -nologo
+
+!IF DEFINED(DEBUG)
+CFLAGS= /MDd /Od
+LIBRARY=libbz2_d.lib
+!ELSE
+CFLAGS= /MD /Ox
+LIBRARY=libbz2.lib
+!ENDIF
+
+CFLAGS= $(CFLAGS) /DWIN32m /D_FILE_OFFSET_BITS=64 /nologo
 
 OBJS= blocksort.obj  \
       huffman.obj    \
@@ -17,11 +26,11 @@ OBJS= blocksort.obj  \
 all: lib bzip2 test
 
 bzip2: lib
-	$(CC) $(CFLAGS) -o bzip2 bzip2.c libbz2.lib setargv.obj
-	$(CC) $(CFLAGS) -o bzip2recover bzip2recover.c
+	$(CC) $(CFLAGS) /Fe:bzip2 bzip2.c $(LIBRARY) setargv.obj
+	$(CC) $(CFLAGS) /Fe:bzip2recover bzip2recover.c
 
 lib: $(OBJS)
-	lib /out:libbz2.lib $(OBJS)
+	lib /out:$(LIBRARY) $(OBJS)
 
 test: bzip2
 	type words1
@@ -59,6 +68,6 @@ clean:
 	del sample2.tst
 	del sample3.tst
 
-.c.obj: 
-	$(CC) $(CFLAGS) -c $*.c -o $*.obj
+.c.obj:
+	$(CC) $(CFLAGS) /c /Fo:$*.obj $*.c
 
